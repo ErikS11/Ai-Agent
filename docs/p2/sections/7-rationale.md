@@ -29,3 +29,16 @@ Each record names the drivers that forced the decision, the options the team act
 | Consequences | Favors freshness and least privilege: due dates, submission status and grades are read at the moment of asking, each read uses the student's own access, and no copy of student records is stored on our side. Only what a question needs is sent to the model provider, where preloading would send the whole course each time. Cost: one question can take several model turns, each waiting on the model and on Moodle (listing assignments makes one Moodle call per assignment), which puts QR-01 at risk and multiplies API cost per question (R4). Answer quality depends on the model picking the right tools, and with no full-text search a fact on an unvisited page can be missed (R2). |
 | Evidence | Agent loop in `agent.py` and per-assignment status calls in `lms.py` (commit `b5c18f7`). Spike S-01 (section 8) measures this design's response time against QR-01. |
 | Related | S-01, QR-01, QR-04, FR-03, R2, R4 |
+
+### ADR-04 Reach students through a chat bubble inside Moodle
+
+| Field | Record |
+|---|---|
+| Status | Accepted |
+| Date and owner | Decided Nov 7, 2026 by John Bramlet (commit `347886c`); recorded by Daniel Habib |
+| Context (drivers) | Students already know their LMS but cannot be assumed to know our agent (section 2.3), and they need a comparable experience across devices (section 2.4). First-time students must find their assignments quickly (QR-02). |
+| Options considered | (a) Terminal app: kept for testing, unusable for most students. (b) Standalone web page: a separate site students would have to find and open. (c) Chat bubble: a script added once through Moodle's "Additional HTML" setting puts a button on every signed-in Moodle page that opens our chat page in a panel. (d) Moodle plugin written in PHP and installed into Moodle. |
+| Decision | (c) Chat bubble inside Moodle. The standalone page stays available at the agent server's root as a fallback. |
+| Consequences | Favors usability: the assistant sits where students already are, with no new site to find, and the panel fits phone-width screens. The agent stays a separate service that can change without reinstalling anything in Moodle, which a plugin (d) would require. Cost: a Moodle administrator must allow our script on every page, which a university's LMS team would have to approve. The panel is served from our server, not Moodle, so it does not inherit the student's Moodle sign-in (see ADR-05) and does not know which course page the student is on. Our server must be reachable from every student's browser. |
+| Evidence | Chat page and bubble: commit `347886c` (`web/chat.html`, `web/embed.js`, `server.py`); setup in `README.md`, section 4. |
+| Related | ADR-02, ADR-05, QR-02 |
