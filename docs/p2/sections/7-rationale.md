@@ -55,3 +55,12 @@ Each record names the drivers that forced the decision, the options the team act
 | Consequences | Favors security and privacy: the agent never holds more access than the student, so a bug or a manipulated prompt cannot reveal another student's grades, because Moodle refuses the request. Cost: the prototype cannot demonstrate QR-03 across students, since every chat uses one test student's token and the chat API does not yet check who is calling. LTI 1.3 identifies the student but does not by itself give the agent that student's Moodle token, so P3 must add a way to obtain one; falling back to one privileged account would move QR-03 enforcement into the agent and supersede this record. Campus sign-in (section 2.4) is met only through the student's Moodle sign-in. |
 | Evidence | `lms.py` sends every Moodle call with the student's token (commit `b5c18f7`); prototype limits in `README.md`, section 4. Per-student sign-in: none yet. |
 | Related | ADR-02, ADR-04, QR-03, FR-02, Q3 |
+
+## 7.2 Trade-off summary
+
+| Quality favored | Architectural move | Cost accepted | Recorded in |
+|---|---|---|---|
+| Feasibility, schedule | Self-host Moodle 5.3 instead of Canvas | Not the LMS students use; sample data only; the team hosts it; a Moodle-specific adapter | ADR-02 |
+| Data freshness, least privilege | Read course data live through read-only tools the model calls | Several model turns per question: response time (QR-01, measured by S-01) and API cost (R4) | ADR-03 |
+| Usability | Chat bubble on every Moodle page | An admin-approved site-wide script; no inherited sign-in or course context; a server every student must reach | ADR-04 |
+| Security, privacy | Every LMS read uses the student's own token | Per-student sign-in still to build; the prototype runs on one test token | ADR-05 |
