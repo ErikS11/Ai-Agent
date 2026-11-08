@@ -34,6 +34,19 @@ The first start takes a few minutes while Moodle installs itself. Watch progress
 
 Stop it with `docker compose down`. Your courses are kept. `docker compose down -v` deletes everything.
 
+## 3a. Quick option: load the sample course
+
+After turning on the API (step 1 below), this creates a sample **CS101** course with weekly pages, four assignments (one graded late, one missing, two upcoming), an announcement, and an enrolled test student. It also saves that student's token in `.env`:
+
+```bash
+printf '\nMOODLE_STUDENT_USERNAME=student1\nMOODLE_STUDENT_PASSWORD=Stu-%s!\n' "$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12)" >> .env
+set -a; source .env; set +a
+docker compose cp moodle/seed_sample_course.php moodle:/tmp/seed.php
+docker compose exec -T -e STUDENT_USERNAME="$MOODLE_STUDENT_USERNAME" -e STUDENT_PASSWORD="$MOODLE_STUDENT_PASSWORD" moodle php /tmp/seed.php
+```
+
+Then get the token with `python get_moodle_token.py`, using the student username and password from `.env`.
+
 ## 3. Set up Moodle for the assistant (once, as admin)
 
 1. **Turn on the API**: Site administration → General → Mobile app → Mobile settings → check **Enable web services for mobile devices** → Save.
