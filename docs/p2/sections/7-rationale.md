@@ -42,3 +42,16 @@ Each record names the drivers that forced the decision, the options the team act
 | Consequences | Favors usability: the assistant sits where students already are, with no new site to find, and the panel fits phone-width screens. The agent stays a separate service that can change without reinstalling anything in Moodle, which a plugin (d) would require. Cost: a Moodle administrator must allow our script on every page, which a university's LMS team would have to approve. The panel is served from our server, not Moodle, so it does not inherit the student's Moodle sign-in (see ADR-05) and does not know which course page the student is on. Our server must be reachable from every student's browser. |
 | Evidence | Chat page and bubble: commit `347886c` (`web/chat.html`, `web/embed.js`, `server.py`); setup in `README.md`, section 4. |
 | Related | ADR-02, ADR-05, QR-02 |
+
+### ADR-05 Read the LMS only with the student's own credential
+
+| Field | Record |
+|---|---|
+| Status | Accepted: a configured test token for the prototype, LTI 1.3 sign-in for P3 |
+| Date and owner | Decided Nov 7, 2026 by John Bramlet (commit `b5c18f7`); recorded by Daniel Habib |
+| Context (drivers) | Unauthorized access to course material must be denied 100% of the time (QR-03), the agent may read only the student's enrolled courses (FR-02), student records fall under FERPA, and OIT needs the agent kept inside the access a student already has (section 2.2, Q3). P1 also named campus sign-in as a constraint (section 2.4). |
+| Options considered | (a) One test student's token, set in the server's configuration. (b) Each student pastes their own Moodle security key into the chat. (c) LTI 1.3: Moodle launches the agent and tells it which student is signed in. |
+| Decision | Every LMS read uses the signed-in student's own Moodle token, so Moodle itself decides what the agent may see. (a) for the P2 prototype only, (c) as the P3 sign-in. (b) was rejected because it asks every student to find and handle a credential. |
+| Consequences | Favors security and privacy: the agent never holds more access than the student, so a bug or a manipulated prompt cannot reveal another student's grades, because Moodle refuses the request. Cost: the prototype cannot demonstrate QR-03 across students, since every chat uses one test student's token and the chat API does not yet check who is calling. LTI 1.3 identifies the student but does not by itself give the agent that student's Moodle token, so P3 must add a way to obtain one; falling back to one privileged account would move QR-03 enforcement into the agent and supersede this record. Campus sign-in (section 2.4) is met only through the student's Moodle sign-in. |
+| Evidence | `lms.py` sends every Moodle call with the student's token (commit `b5c18f7`); prototype limits in `README.md`, section 4. Per-student sign-in: none yet. |
+| Related | ADR-02, ADR-04, QR-03, FR-02, Q3 |
