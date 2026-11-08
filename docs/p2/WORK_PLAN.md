@@ -51,19 +51,19 @@ Omor co-wrote section 2 in P1. Zaid owns it now, so if Omor helps with the surve
 | ID type | Who assigns | Range |
 |---|---|---|
 | CH-nn (changes, 0.2) | John | CH-01 to CH-20. Ask John for a number |
-| UC-nn | Erik | Final list published in the team chat by **Sat 11 PM** |
+| UC-nn | Erik | Final list published in the team chat by **Sun 9 AM** |
 | QAS-nn | Ahmad | QAS-01 to QAS-05 |
 | ADR-nn | Daniel | ADR-01 is the style (from Ahmad's 6.2). ADR-02 onward are Daniel's |
 | S-nn (spike) | Zaid | S-01 |
 | R-n (risks) | John | Keep R1 to R5, new risks start at R6 |
 | Q-n (questions) | John | Keep Q1 to Q3, new ones start at Q4 |
 
-## Timeline (tonight and tomorrow)
+## Timeline (Sunday, Nov 8)
 
 | When | Done when | Who |
 |---|---|---|
-| **Sat 11 PM** | Everyone has cloned the repo and can push a branch. Erik posts the final UC list. Zaid's survey is out. Ahmad posts the draft component list | All |
-| **Sun 10 AM** | Erik's 4.2 drafts are in the shared doc, so Omor and Daniel can build scenario tables from them. Omor's domain model draft is shared | Erik, Omor |
+| **Sun 9 AM** | Everyone has cloned the repo and can push a branch. Erik posts the final UC list. Zaid's survey is out. Ahmad posts the draft component list | All |
+| **Sun 11 AM** | Erik's 4.2 drafts are in the shared doc, so Omor and Daniel can build scenario tables from them. Omor's domain model draft is shared | Erik, Omor |
 | **Sun 1 PM** | Ahmad's 6.2 style is decided, so Daniel can write ADR-01. Zaid's spike has measured numbers | Ahmad, Zaid, Daniel |
 | **Sun 4 PM** | **Every owner has opened their PR** | All |
 | **Sun 6 PM** | **Every PR is reviewed and merged** (use the review pairs above) | All |
