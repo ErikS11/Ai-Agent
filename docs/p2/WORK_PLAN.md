@@ -15,7 +15,7 @@ Read [ONBOARDING.md](../../ONBOARDING.md) first. It explains what has been built
 
 We lost a lot in P1 (C4: 3/6, C5: 4/8 for everyone) because the repo was empty. So:
 
-1. **Commit your own section from your own GitHub account**, on a branch, through a pull request.
+1. **Commit your own section from your own GitHub account**, on a branch, through a **pull request (PR)**: a request on GitHub to merge your branch into `main` after a teammate approves it. Step-by-step instructions are in ONBOARDING.md, section 2, step 6.
 2. **Review the PR you are assigned below** (approve it or request changes on GitHub).
 3. Draft together in our shared doc if you like, but **the final text of your section is committed by you.**
 

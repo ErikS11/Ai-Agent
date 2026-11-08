@@ -97,7 +97,20 @@ git add docs/p2/sections/6-design.md docs/p2/diagrams/component-view.drawio
 git commit -m "6.3: add component view"             # message starts with the section or requirement
 git push -u origin docs/p2-section-6
 ```
-Then on GitHub, click **Compare & pull request**, add your reviewer from the work plan, and wait for their approval before you merge.
+A **pull request (PR)** is a request on GitHub to merge your branch into `main`. A teammate looks at your changes and approves them before they're merged.
+
+**Open your pull request:**
+1. Go to https://github.com/azghier1/Ai-Agent. A yellow banner shows your branch. Click **Compare & pull request**. If there's no banner, open the **Pull requests** tab → **New pull request**, then pick your branch.
+2. Give it a title (e.g. `6: High-level design`) and fill in the template.
+3. In the right sidebar, click the gear next to **Reviewers** and pick your reviewer from the work plan.
+4. Click **Create pull request**, then send your reviewer the link.
+
+**Review a teammate's pull request** (everyone does at least one, because it counts toward your grade):
+1. Open the PR link, or go to the **Pull requests** tab and click it.
+2. Open the **Files changed** tab and read the changes.
+3. Click **Review changes** (top right), write a short comment on what you checked, choose **Approve** (or **Request changes** if something's wrong), and click **Submit review**.
+
+**Merge:** after it's approved, the PR owner clicks **Merge pull request** → **Confirm merge** on the **Conversation** tab. GitHub doesn't let you approve your own PR.
 
 Rules (from our P1 section 4.4):
 - `main` only gets reviewed work. Everything goes through a pull request, and someone else approves it.
