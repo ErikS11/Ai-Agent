@@ -1,0 +1,100 @@
+{
+  "courses": [
+    {
+      "id": 101,
+      "name": "Intro to Programming",
+      "code": "CS101",
+      "current_grade": "78.50",
+      "syllabus": "CS101 Intro to Programming. Instructor: Dr. Ramos. Office hours: Tue/Thu 2-4pm, Room 210.\n\nGrading: Quizzes 20%, Labs 40%, Midterm 15%, Final project 25%.\n\nLate work: -10% per day, up to 3 days. After that, no credit unless you email the instructor before the deadline.\n\nAI tools: You may use AI assistants to explain concepts and debug errors. You may not submit AI-written code as your own.",
+      "announcements": [
+        {
+          "title": "Lab 1 due date moved",
+          "posted_at": "2026-11-05T09:00:00Z",
+          "message": "Lab 1 is now due Tuesday Nov 10 at 11:59pm. Office hours Thursday are extended to 5pm."
+        },
+        {
+          "title": "Welcome to CS101!",
+          "posted_at": "2026-10-27T08:00:00Z",
+          "message": "Please read the syllabus and install Python before Week 1 lab."
+        }
+      ],
+      "modules": [
+        {
+          "name": "Week 1: Getting Started",
+          "items": [
+            {
+              "title": "Installing Python",
+              "type": "Page",
+              "page_id": "installing-python"
+            },
+            {
+              "title": "Quiz 1",
+              "type": "Quiz",
+              "page_id": null
+            }
+          ]
+        },
+        {
+          "name": "Week 2: Variables & Loops",
+          "items": [
+            {
+              "title": "Loops lecture notes",
+              "type": "Page",
+              "page_id": "loops-lecture-notes"
+            },
+            {
+              "title": "Lab 1: Loops",
+              "type": "Assignment",
+              "page_id": null
+            }
+          ]
+        }
+      ],
+      "pages": {
+        "installing-python": {
+          "title": "Installing Python",
+          "body": "Download Python 3 from python.org. On Mac, run the installer, then open Terminal and type python3 --version to check it worked."
+        },
+        "loops-lecture-notes": {
+          "title": "Loops lecture notes",
+          "body": "A for loop repeats code once for each item in a sequence: for i in range(5): print(i) prints 0 through 4.\n\nA while loop repeats while a condition is true. A loop counter is a variable you update each time through the loop, like count = count + 1.\n\nCommon bug: forgetting to update the counter in a while loop causes an infinite loop."
+        }
+      },
+      "assignments": [
+        {
+          "id": 1001,
+          "name": "Quiz 1",
+          "due_at": "2026-11-03T23:59:00Z",
+          "my_status": "submitted",
+          "late": true,
+          "missing": false,
+          "instructions": "10 multiple-choice questions on Python basics and installing Python.",
+          "max_grade": 10,
+          "my_grade": "6.00 / 10.00"
+        },
+        {
+          "id": 1002,
+          "name": "Lab 1: Loops",
+          "due_at": "2026-11-10T23:59:00Z",
+          "my_status": "new",
+          "late": false,
+          "missing": false,
+          "instructions": "Write a program that asks the user for a number n, then prints the sum of all numbers from 1 to n using a loop. Then extend it to print only the even numbers' sum. Submit your .py file.",
+          "max_grade": 25,
+          "my_grade": null
+        },
+        {
+          "id": 1003,
+          "name": "Reading Reflection 1",
+          "due_at": "2026-11-01T23:59:00Z",
+          "my_status": "new",
+          "late": false,
+          "missing": true,
+          "instructions": "Write one paragraph on why you're taking this course.",
+          "max_grade": 5,
+          "my_grade": null
+        }
+      ]
+    }
+  ]
+}
