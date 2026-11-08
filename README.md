@@ -63,6 +63,23 @@ Then get the token with `python get_moodle_token.py`, using the student username
    Enter the student's username and password. Or sign in as the student and copy the "Moodle mobile web service" key from Profile → Preferences → **Security keys**. Put it in `.env` as `MOODLE_TOKEN=...`.
 5. Run `python agent.py`. The first line should say `using Moodle (...)`.
 
+## 4. Chat bubble in Moodle (no terminal for students)
+
+Students can chat from a bubble in the corner of every Moodle page.
+
+1. Start the web server (leave it running):
+   ```bash
+   python server.py
+   ```
+   You can also open the chat page on its own at http://localhost:8000.
+2. In Moodle, as admin: **Site administration → Appearance → Additional HTML → "Before BODY is closed"**, paste this and save:
+   ```html
+   <script src="http://localhost:8000/embed.js"></script>
+   ```
+3. Sign in to Moodle as a student. A blue chat button appears at the bottom right of every page. It's hidden on the login page and for visitors who aren't signed in.
+
+**Prototype limits:** every chat uses the one student token in `.env`, so everyone who opens the bubble sees that student's data. Chats are kept in memory and cleared when the server restarts. For real students, the next step is LTI 1.3, so Moodle tells the assistant who is signed in. If teammates should use your server, set `AGENT_HOST=0.0.0.0` and point the script tag at your Tailscale address instead of `localhost`. Anyone who can reach the server uses your Anthropic API credits.
+
 ## Team access
 
 **Code:** put this folder in a private GitHub repo (`.env` is git-ignored, so keys and passwords stay out). Teammates clone it, make their own `.env`, and run the agent on their own computer. Anyone can edit `agent.py` and `lms.py` and open pull requests.
@@ -80,6 +97,8 @@ Then get the token with `python get_moodle_token.py`, using the student username
 | `agent.py` | Chat loop, the tutor's instructions (`SYSTEM`), and tool definitions. |
 | `lms.py` | `MoodleLMS` (Moodle web service API) and `MockLMS` (sample data), with the same methods. |
 | `docker-compose.yml` | Moodle 5.3 + PostgreSQL. |
+| `server.py` | Web server: chat page at `/`, Moodle bubble script at `/embed.js`, chat API at `/api/chat`. |
+| `web/` | The chat page (`chat.html`) and Moodle bubble (`embed.js`). |
 | `get_moodle_token.py` | Gets a student's API token. |
 | `sample_data.json` | Fake course from one student's point of view. |
 

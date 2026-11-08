@@ -92,14 +92,18 @@ for t in TOOLS:
 NEEDS_APPROVAL: set[str] = set()
 
 
-def run_tool(lms, name: str, args: dict) -> tuple[str, bool]:
+def cli_approve(name: str, args: dict) -> bool:
+    """Terminal approval prompt for tools in NEEDS_APPROVAL."""
+    print(f"\n--- The assistant wants to {name} ---\n{json.dumps(args, indent=2)}")
+    return input("Approve? [y/N] ").strip().lower() == "y"
+
+
+def run_tool(lms, name: str, args: dict, approve=cli_approve) -> tuple[str, bool]:
     """Execute one tool call. Returns (result_text, is_error)."""
     if name not in {t["name"] for t in TOOLS}:
         return f"Unknown tool {name}", True
-    if name in NEEDS_APPROVAL:
-        print(f"\n--- The assistant wants to {name} ---\n{json.dumps(args, indent=2)}")
-        if input("Approve? [y/N] ").strip().lower() != "y":
-            return "The user declined this action. Ask what they'd like changed.", True
+    if name in NEEDS_APPROVAL and not approve(name, args):
+        return "The user declined this action. Ask what they'd like changed.", True
     try:
         result = getattr(lms, name)(**args)
         return json.dumps(result, default=str), False
@@ -107,8 +111,15 @@ def run_tool(lms, name: str, args: dict) -> tuple[str, bool]:
         return f"Error: {e}", True
 
 
-def ask(client, lms, messages: list) -> None:
-    """Run the agent loop for one user turn, appending everything to `messages`."""
+def ask(client, lms, messages: list, on_text=None, on_tool=None, approve=cli_approve) -> str:
+    """Run the agent loop for one user turn, appending everything to `messages`.
+
+    Returns the assistant's reply text. on_text/on_tool are optional callbacks
+    (the terminal uses them to print as it goes; the web server doesn't).
+    """
+    on_text = on_text or (lambda text: None)
+    on_tool = on_tool or (lambda name, args: None)
+    reply = []
     while True:
         response = client.beta.messages.create(
             model=MODEL,
@@ -126,29 +137,33 @@ def ask(client, lms, messages: list) -> None:
 
         for block in response.content:
             if block.type == "text" and block.text.strip():
-                print(f"\nAssistant: {block.text}")
+                reply.append(block.text)
+                on_text(block.text)
 
         if response.stop_reason == "refusal":
-            print("\n(The request was declined.)")
-            return
+            reply.append("(Sorry, I can't help with that request.)")
+            on_text(reply[-1])
+            break
         if response.stop_reason == "max_tokens":
-            print("\n(Response was cut off at max_tokens.)")
-            return
+            reply.append("(My answer got cut off. Try asking for a shorter version.)")
+            on_text(reply[-1])
+            break
         if response.stop_reason == "pause_turn":
             continue
         if response.stop_reason != "tool_use":
-            return
+            break
 
         results = []
         for block in response.content:
             if block.type == "tool_use":
-                print(f"  [looking up] {block.name}({json.dumps(block.input)})")
-                text, is_error = run_tool(lms, block.name, block.input)
+                on_tool(block.name, block.input)
+                text, is_error = run_tool(lms, block.name, block.input, approve)
                 results.append(
                     {"type": "tool_result", "tool_use_id": block.id, "content": text, "is_error": is_error}
                 )
         # All results go back in a single user message.
         messages.append({"role": "user", "content": results})
+    return "\n\n".join(reply)
 
 
 def main():
@@ -168,7 +183,11 @@ def main():
         start = len(messages)
         messages.append({"role": "user", "content": user})
         try:
-            ask(client, lms, messages)
+            ask(
+                client, lms, messages,
+                on_text=lambda text: print(f"\nAssistant: {text}"),
+                on_tool=lambda name, args: print(f"  [looking up] {name}({json.dumps(args)})"),
+            )
         except anthropic.AuthenticationError:
             print("Auth failed: set ANTHROPIC_API_KEY in .env")
             del messages[start:]  # drop the failed turn so history stays valid
