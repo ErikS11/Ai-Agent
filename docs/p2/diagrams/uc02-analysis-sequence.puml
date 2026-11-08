@@ -1,0 +1,37 @@
+@startuml uc02-analysis-sequence
+' Figure 5.2.2: analysis sequence diagram for UC-02 Organize Assignments.
+' Message numbers match the scenario table in docs/p2/sections/5-2-uc02.md, one message per row.
+' Render: java -jar plantuml.jar -tpng docs/p2/diagrams/uc02-analysis-sequence.puml
+hide footbox
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+
+actor Student
+boundary AssistantInterface
+control AssignmentOrganizer
+entity ":Student" as StudentRecord
+entity ":Course" as Course
+entity ":Assignment" as Assignment
+entity ":Submission" as Submission
+
+Student -> AssistantInterface : 1 asks for their assignments\norganized by due date
+AssistantInterface -> AssignmentOrganizer : 2.1 passes on the request to\norganize the student's assignments
+AssignmentOrganizer -> StudentRecord : 2.2 asks for the courses the\nstudent is enrolled in
+
+loop each enrolled course
+  AssignmentOrganizer -> Course : 2.3 asks the course for its\npublished assignments
+  break A3: the course's assignments cannot be retrieved
+    Course --> AssignmentOrganizer : A3.1 reports that its assignments\ncannot be retrieved
+    AssignmentOrganizer -> AssistantInterface : A3.2 reports that the assignments\ncould not be retrieved
+    AssistantInterface -> Student : A3.3 shows an error message\nnaming the course
+  end
+  loop each assignment of the course
+    AssignmentOrganizer -> Assignment : 2.4 asks the assignment for the\nstudent's submission status
+    Assignment -> Submission : 2.5 looks up the\nstudent's submission
+  end
+end
+
+AssignmentOrganizer -> AssignmentOrganizer : 2.6 orders the assignments by due date,\nundated ones last, and marks those\ndue in the next seven days
+AssignmentOrganizer -> AssistantInterface : 2.7 hands over the organized list
+AssistantInterface -> Student : 2.8 shows the organized list
+@enduml
