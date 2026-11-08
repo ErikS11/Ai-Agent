@@ -51,7 +51,7 @@ Omor co-wrote section 2 in P1. Zaid owns it now, so if Omor helps with the surve
 | ID type | Who assigns | Range |
 |---|---|---|
 | CH-nn (changes, 0.2) | John | CH-01 to CH-20. Ask John for a number |
-| UC-nn | Erik | Final list published in the team chat by **Sun 9 AM** |
+| UC-nn | Erik | Final list published in the team chat by **Sun 11 AM** |
 | QAS-nn | Ahmad | QAS-01 to QAS-05 |
 | ADR-nn | Daniel | ADR-01 is the style (from Ahmad's 6.2). ADR-02 onward are Daniel's |
 | S-nn (spike) | Zaid | S-01 |
@@ -62,15 +62,12 @@ Omor co-wrote section 2 in P1. Zaid owns it now, so if Omor helps with the surve
 
 | When | Done when | Who |
 |---|---|---|
-| **Sun 9 AM** | Everyone has cloned the repo and can push a branch. Erik posts the final UC list. Zaid's survey is out. Ahmad posts the draft component list | All |
-| **Sun 11 AM** | Erik's 4.2 drafts are in the shared doc, so Omor and Daniel can build scenario tables from them. Omor's domain model draft is shared | Erik, Omor |
-| **Sun 1 PM** | Ahmad's 6.2 style is decided, so Daniel can write ADR-01. Zaid's spike has measured numbers | Ahmad, Zaid, Daniel |
-| **Sun 4 PM** | **Every owner has opened their PR** | All |
-| **Sun 6 PM** | **Every PR is reviewed and merged** (use the review pairs above) | All |
-| **Sun 7 PM** | Omor runs cross-checks K1 to K6 across everyone's work. Zaid finishes 9 (traceability needs all the IDs). John fills 0.1 with real hashes and PR numbers | Omor, Zaid, John |
-| **Sun 9 PM** | John assembles the PDF and removes every guidance, example and warning box plus the two marking pages. Everyone signs section 12 | John, all |
-| **Sun 10:30 PM** | PDF committed to `/docs/p2`, tag `p2` on that commit, `git push origin p2` | John |
-| **Sun 11 PM** | **One** upload to Canvas (John only) | John |
+| **Sun 11 AM** | Everyone has cloned the repo and can push a branch. Erik posts the final UC list. Zaid's survey is out. Ahmad posts the draft component list | All |
+| **Sun 2 PM** | Erik's use-case drafts and Omor's domain model draft are shared (Omor and Daniel build on them). Ahmad has picked the style (Daniel needs it for ADR-01). Zaid has spike numbers | Erik, Omor, Ahmad, Zaid |
+| **Sun 6 PM** | **Every owner has opened their PR** | All |
+| **Sun 8 PM** | **Every PR is reviewed and merged** (use the review pairs above). Then Omor runs cross-checks K1 to K6, Zaid finishes 9, and John fills 0.1 with real hashes and PR numbers | All |
+| **Sun 10 PM** | John assembles the PDF and removes every guidance, example and warning box plus the two marking pages. Everyone signs section 12 | John, all |
+| **Sun 11 PM** | PDF committed to `/docs/p2`, tag `p2` pushed, and **one** upload to Canvas (John only). That leaves an hour of buffer | John |
 
 ## Where files go
 
@@ -124,7 +121,7 @@ Diagram tools: draw.io (diagrams.net) or PlantUML. **Commit the source file**, n
 - QR-03 (deny unauthorized users) depends on identity, which is still a single test token in the prototype.
 - CON / 2.4 said campus SSO with Duo. The prototype uses Moodle tokens, and LTI 1.3 is the planned path.
 
-**Suggested spike (Zaid):** *S-01: Can the agent answer a typical student question within 5 s at the 95th percentile with 20 concurrent users (QR-01)?* Send 100 questions (20 at a time) to `POST /api/chat` on the running server, record each response time, and report p50/p95. If it fails, that's still a valid result. It feeds an ADR (for example lower effort, a smaller model, streaming, or relaxing QR-01). Cost: a few dollars of API credit. Use the mock LMS or Moodle, but say which.
+**Suggested spike (Zaid).** P2 asks for exactly one spike per team (section 8, 4 points), and it is the only code P2 allows. Zaid owns it because it is the feasibility evidence our P1 feedback asked for. Anyone can help run it; credit them in 0.1. *S-01: Can the agent answer a typical student question within 5 s at the 95th percentile with 20 concurrent users (QR-01)?* Send 100 questions (20 at a time) to `POST /api/chat` on the running server, record each response time, and report p50/p95. If it fails, that's still a valid result. It feeds an ADR (for example lower effort, a smaller model, streaming, or relaxing QR-01). Cost: a few dollars of API credit. Use the mock LMS or Moodle, but say which.
 
 ## After P2: what we build in P3
 
