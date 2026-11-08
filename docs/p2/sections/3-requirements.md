@@ -72,6 +72,10 @@ The consolidated P2 use-case list is:
 
 ### Use-Case Numbering Reconciliation
 
+![Figure 3.4: AI Study Assistant use-case diagram](../diagrams/p2-use-case-diagram.png)
+
+*Figure 3.4. Student interactions with the AI Study Assistant and Moodle LMS.*
+
 UC-01 and UC-02 retain their original identifiers and names.
 
 UC-03 represents the student goal of identifying upcoming assignment deadlines within seven days.
