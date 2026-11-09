@@ -40,7 +40,8 @@ CSS = """
 @page { size: Letter; margin: 0.8in 0.75in; }
 body { font: 10.5pt/1.45 "Helvetica Neue", Arial, sans-serif; color: #1d2125; }
 h1 { font-family: Georgia, serif; color: #1f3864; border-bottom: 2px solid #1f3864; padding-bottom: 4px;
-     font-size: 20pt; margin-top: 0; page-break-before: always; }
+     font-size: 20pt; margin-top: 28px; }
+.newpage { page-break-before: always; }
 h1.cover-title { page-break-before: avoid; border: none; font-size: 26pt; margin-bottom: 2px; }
 h2 { font-family: Georgia, serif; color: #1f3864; font-size: 14pt; margin-top: 18px; }
 h3 { color: #2e74b5; font-size: 12pt; } h4 { font-size: 11pt; }
@@ -60,7 +61,7 @@ pre { background: #f2f2f2; padding: 8px; overflow-wrap: anywhere; white-space: p
 def cover(date: str) -> str:
     rows = "".join(f"<tr><td>{n}</td><td>{i}</td><td>{g}</td></tr>" for n, i, g in MEMBERS)
     return f"""
-<p class="header">CE/CS/SE 3354 · Software Engineering · Fall 2026</p>
+<p class="header" style="margin-top:0">CE/CS/SE 3354 · Software Engineering · Fall 2026</p>
 <p class="cover-sub">Project Milestone P2</p>
 <h1 class="cover-title">Analysis and High-Level Design</h1>
 <p class="cover-proj">LMS AI Agent</p>
@@ -95,9 +96,14 @@ def find_chrome() -> str:
 def main():
     missing = [f for f in ORDER if not (SECTIONS / f).exists()]
     body = [cover(datetime.date.today().strftime("%B %d, %Y"))]
+    first = True
     for f in ORDER:
         if (SECTIONS / f).exists():
-            body.append(section_html(SECTIONS / f))
+            html_part = section_html(SECTIONS / f)
+            if first:
+                html_part = html_part.replace("<h1>", "<h1 class=\"newpage\">", 1)
+                first = False
+            body.append(html_part)
     # Sub-sections that share a top-level number should not each start a new page.
     html = "\n".join(body)
     html = re.sub(r"<h1>(5\.[23][^<]*)</h1>", r"<h2>\1</h2>", html)
