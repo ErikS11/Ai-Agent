@@ -4,11 +4,11 @@
 
 Primary stakeholder: a student using Moodle to track coursework, understand course materials, and practice concepts. Other stakeholders include instructors whose course policies must be respected and administrators responsible for LMS access and data protection.
 
-The prototype supports asking about courses, assignments, syllabus, pages, modules and announcements. These are prototype capabilities, not proof that students requested them. P1 feedback identified stakeholder needs as assumptions. To address that, circulate the five-question survey below and report the actual sample size, counts and response percentages. Do not characterize an uncollected survey as evidence.
+The prototype supports asking about courses, assignments, syllabus, pages, modules and announcements. These are prototype capabilities, not proof that students requested them. P1 feedback identified stakeholder needs as assumptions. A five-question survey is proposed to evaluate those assumptions; no collected responses are available in this contribution.
 
-Survey (anonymous, voluntary): (1) How often do you miss or nearly miss LMS deadlines? Never/Rarely/Sometimes/Often. (2) Which LMS tasks are hardest? Select all: find deadlines, find assignment instructions, understand syllabus policies, review notes, practice concepts, other. (3) How useful would an AI assistant embedded in the LMS be? 1–5. (4) Which concern matters most? Accuracy, privacy, speed, academic integrity, accessibility, other. (5) Would you use a read-only study assistant that does not complete graded work? Yes/Maybe/No. Do not collect names or student IDs.
+Proposed survey (anonymous, voluntary, with no names or student IDs): (1) How often do you miss or nearly miss LMS deadlines? Never/Rarely/Sometimes/Often. (2) Which LMS tasks are hardest? Select all: find deadlines, find assignment instructions, understand syllabus policies, review notes, practice concepts, other. (3) How useful would an AI assistant embedded in the LMS be? 1–5. (4) Which concern matters most? Accuracy, privacy, speed, academic integrity, accessibility, other. (5) Would you use a read-only study assistant that does not complete graded work? Yes/Maybe/No.
 
-Evidence status: no survey responses or aggregate results have been supplied in this contribution. The stakeholder needs above remain assumptions supported by the project's intended scope, not validated student findings. No sample size, response counts, percentages or usefulness score is claimed. If the survey is completed, publish anonymized aggregate results and the collection method before using it as stakeholder evidence. A convenience sample of classmates would be exploratory, not representative of all students. The P1 stakeholder-evidence issue remains open.
+Evidence status: the survey is not completed in the available evidence; no responses or aggregate results have been supplied in this contribution. The stakeholder needs above remain assumptions supported by the project's intended scope, not validated student findings. No sample size, response counts, percentages or usefulness score is claimed. Validation would require actual anonymized aggregate results and a documented collection method. A convenience sample of classmates would be exploratory, not representative of all students. The P1 stakeholder-evidence issue remains open.
 
 ## 2.4 Feasibility update
 
@@ -20,7 +20,7 @@ Performance feasibility — open. QR-01's target (95% of responses within 5 seco
 
 Privacy/security feasibility — conditional. Student question/context is sent to the external Anthropic Claude API over HTTPS. The current shared-token approach can expose one test student's data to anyone reaching the chat server. Production deployment requires per-user authentication, authorization and privacy review; the current prototype is for test data only.
 
-Operational/economic feasibility — conditional. Moodle and the chat server require hosting and maintenance, and Claude API usage incurs cost. Document actual usage costs and deployment assumptions before a production verdict.
+Operational/economic feasibility — conditional. Moodle and the chat server require hosting and maintenance, and Claude API usage incurs cost. Actual usage costs and deployment assumptions are not documented in this contribution, so a production cost verdict is not established.
 
 Verdict: the repository provides an implemented prototype and documented setup path using synthetic/test data. This supports a limited technical feasibility assessment, while stakeholder validation, independently reproduced integration, production identity/privacy, performance and operating cost remain unresolved. Production deployment feasibility is not yet established.
 

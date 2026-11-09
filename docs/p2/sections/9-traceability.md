@@ -39,6 +39,6 @@ Component names and analysis concepts follow [Section 6.3 / 6.5](https://github.
 | Cross-author analysis / ADR baseline | Section 5.1 and UC-01 interaction model unavailable; UC-02 and rationale still on separate PRs. Exact class and decision consistency cannot yet be certified. | Zaid: reconcile this matrix after models merge; Omor: K1–K6 cross-checks; Daniel/Ahmad: confirm ADR and component mappings. |
 | Feasibility and stakeholder evidence | Section 2 explicitly records that survey evidence is unavailable; neither this matrix nor S-01 supplies student survey or hosting-cost evidence. | Zaid: collect and report actual aggregate survey data; John: ensure final assembly and contribution/AI-use records reflect remaining gaps. |
 
-No requirement is marked accepted solely because a trace exists. The matrix provides design coverage; acceptance requires the corresponding test evidence. P2 changes here are documentation and spike code only; listed production fixes remain P3 work.
+No requirement is marked accepted solely because a trace exists. The matrix provides design coverage; acceptance requires the corresponding test evidence. This contribution changes documentation only; John's spike is separate, and listed production fixes remain P3 work.
 
-AI assistance: Codex helped inspect the linked sources and draft the mappings and gaps. Zaid must review the final analysis and record the assistance in Section 10.5.
+AI assistance: Codex helped inspect the linked sources and draft the mappings and gaps.
