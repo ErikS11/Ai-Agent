@@ -2,7 +2,8 @@
 
 Run from the repository root:
     pip install markdown
-    python docs/p2/build_pdf.py
+    python docs/p2/build_pdf.py            # draft: builds even with gaps, lists them
+    python docs/p2/build_pdf.py --final    # stops if a section is missing or a placeholder remains
 Needs Google Chrome (or Chromium) installed; it prints the HTML to PDF headlessly.
 """
 
@@ -94,6 +95,7 @@ def find_chrome() -> str:
 
 
 def main():
+    final = "--final" in sys.argv
     missing = [f for f in ORDER if not (SECTIONS / f).exists()]
     body = [cover(datetime.date.today().strftime("%B %d, %Y"))]
     first = True
@@ -116,6 +118,10 @@ def main():
         if first52:
             html = html[:first52.start()] + "<h2>5.2 Object interaction models</h2>" + html[first52.start():]
     html = re.sub(r"<h1>(5\.[23][^<]*)</h1>", r"<h2>\1</h2>", html)
+    leftovers = sorted(set(re.findall(r"\[(?:TBD|NOT [A-Z ]+|COUNTS|PR #\[?n\]?|Member \d)\]|placeholder", html, re.I)))
+    if final and (missing or leftovers):
+        sys.exit("Not building the final PDF. Missing sections: %s. Placeholders: %s"
+                 % (", ".join(missing) or "none", ", ".join(leftovers) or "none"))
     OUT_HTML.write_text(f"<!doctype html><html><head><meta charset='utf-8'><title>CS3354 P2 Group 1</title>"
                         f"<style>{CSS}</style></head><body>{html}</body></html>")
     subprocess.run([find_chrome(), "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
@@ -125,7 +131,6 @@ def main():
     print(f"Wrote {OUT_PDF.relative_to(HERE.parent.parent)}")
     if missing:
         print("MISSING sections (not in the PDF):", ", ".join(missing))
-    leftovers = sorted(set(re.findall(r"\[(?:TBD|NOT [A-Z ]+|COUNTS|PR #\[?n\]?|Member \d)\]|placeholder", html, re.I)))
     if leftovers:
         print("WARNING placeholders still in the text:", ", ".join(leftovers))
 
