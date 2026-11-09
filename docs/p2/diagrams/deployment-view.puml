@@ -1,0 +1,39 @@
+@startuml
+skinparam shadowing false
+node "Student device" as device {
+  artifact "Browser: Moodle page" as browser
+  artifact "embed.js + chat iframe" as iframe
+}
+node "Development host" as host {
+  node "Python process :8000" as python {
+    artifact "FastAPI server.py" as server
+    artifact "agent.py" as agent
+    artifact "lms.py" as lms
+  }
+  node "Docker runtime" as docker {
+    node "Moodle container :8080" as moodle {
+      artifact "Moodle 5.3 / REST" as rest
+    }
+    database "PostgreSQL container" as db
+  }
+}
+cloud "Anthropic cloud [external]" as cloud {
+  artifact "Claude API" as claude
+}
+browser --> rest : HTTP :8080 (development)
+iframe --> server : HTTP :8000 /api/chat (development)
+server --> agent : local call
+agent --> lms : tool execution
+lms --> rest : Moodle REST + test student token
+rest --> db : internal DB connection
+agent --> claude : HTTPS outbound; prompt + selected course data
+note right of claude
+External trust boundary.
+Evaluate FERPA, vendor policy,
+data minimization and retention.
+end note
+note bottom of iframe
+Production: HTTPS and per-student identity required.
+Current prototype uses a single test student token.
+end note
+@enduml
