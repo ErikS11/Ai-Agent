@@ -28,7 +28,7 @@ Each record names the drivers that forced the decision, the options the team act
 | Decision | (c) Self-hosted Moodle 5.3. CON-01 now names Moodle, which answers Q1. |
 | Consequences | Favors feasibility and schedule: the API works today, costs nothing, and any member can run Moodle on a laptop. Cost: it is not the LMS UT Dallas students use, so the agent cannot reach their real courses and all course content is our own sample data (R3). The team hosts, seeds and upgrades Moodle itself. The LMS adapter (`lms.py`) is Moodle-specific, so supporting Canvas later means writing a second adapter behind the same seven tool methods. |
 | Evidence | Working prototype against Moodle: commits `b5c18f7` (agent and Moodle adapter), `f019be3` (Moodle install fix), `c5ee6e5` (sample course seed). Canvas free-version block: `ONBOARDING.md`, section 1. |
-| Related | ADR-04, ADR-05, CON-01, Q1, R1, R3 |
+| Related | ADR-04, ADR-05, CH-02, CON-01, Q1, R1, R3 |
 
 ### ADR-03 Fetch course data on demand through read-only tools
 
@@ -41,7 +41,7 @@ Each record names the drivers that forced the decision, the options the team act
 | Decision | (a) Tool calling on demand. Every tool only reads; nothing writes to the LMS. |
 | Consequences | Favors freshness and least privilege: due dates, submission status and grades are read at the moment of asking, each read uses the student's own access, and no copy of student records is stored on our side. Only what a question needs is sent to the model provider, where preloading would send the whole course each time. Cost: one question can take several model turns, each waiting on the model and on Moodle (listing assignments makes one Moodle call per assignment), which puts QAS-01 at risk and multiplies API cost per question (R4). Answer quality depends on the model picking the right tools, and with no full-text search a fact on an unvisited page can be missed (R2). |
 | Evidence | Agent loop in `agent.py` and per-assignment status calls in `lms.py` (commit `b5c18f7`). Spike S-01 (section 8) measures this design's response time against QAS-01. |
-| Related | ADR-01, S-01, QAS-01, QR-04, FR-03, R2, R4 |
+| Related | ADR-01, S-01, QAS-01, QR-04, FR-03, R2, R4, R6, R8 |
 
 ### ADR-04 Reach students through a chat bubble inside Moodle
 
@@ -54,7 +54,7 @@ Each record names the drivers that forced the decision, the options the team act
 | Decision | (c) Chat bubble inside Moodle. The standalone page stays available at the agent server's root as a fallback. |
 | Consequences | Favors usability: the assistant sits where students already are, with no new site to find, and the panel fits phone-width screens. The agent stays a separate service that can change without reinstalling anything in Moodle, which a plugin (d) would require. Cost: a Moodle administrator must allow our script on every page, which a university's LMS team would have to approve. The panel is served from our server, not Moodle, so it does not inherit the student's Moodle sign-in (see ADR-05) and does not know which course page the student is on. Our server must be reachable from every student's browser. |
 | Evidence | Chat page and bubble: commit `347886c` (`web/chat.html`, `web/embed.js`, `server.py`); setup in `README.md`, section 4. |
-| Related | ADR-02, ADR-05, QR-02 |
+| Related | ADR-02, ADR-05, QR-02, R7 |
 
 ### ADR-05 Read the LMS only with the student's own credential
 
@@ -65,9 +65,9 @@ Each record names the drivers that forced the decision, the options the team act
 | Context (drivers) | All 20 negative authorization tests must return no protected information (QAS-02), the agent may read only the student's enrolled courses (FR-02), student records fall under FERPA, and OIT needs the agent kept inside the access a student already has (section 2.2, Q3). P1 also named campus sign-in as a constraint (section 2.4). |
 | Options considered | (a) One test student's token, set in the server's configuration. (b) Each student pastes their own Moodle security key into the chat. (c) LTI 1.3: Moodle launches the agent and tells it which student is signed in. |
 | Decision | Every LMS read uses the signed-in student's own Moodle token, so Moodle itself decides what the agent may see. (a) for the P2 prototype only, (c) as the P3 sign-in. (b) was rejected because it asks every student to find and handle a credential. |
-| Consequences | Favors security and privacy: the agent never holds more access than the student, so a bug or a manipulated prompt cannot reveal another student's grades, because Moodle refuses the request. Cost: the prototype cannot demonstrate QAS-02 across students, since every chat uses one test student's token and the chat API does not yet check who is calling. LTI 1.3 identifies the student but does not by itself give the agent that student's Moodle token, so P3 must add a way to obtain one; falling back to one privileged account would move QAS-02 enforcement into the agent and supersede this record. Campus sign-in (section 2.4) is met only through the student's Moodle sign-in. |
+| Consequences | Favors security and privacy: the agent never holds more access than the student, so a bug or a manipulated prompt cannot reveal another student's grades, because Moodle refuses the request. Cost: the prototype cannot demonstrate QAS-02 across students, since every chat uses one test student's token and the chat API does not yet check who is calling. LTI 1.3 identifies the student but does not by itself give the agent that student's Moodle token, so P3 must add a way to obtain one (Q6); falling back to one privileged account would move QAS-02 enforcement into the agent and supersede this record. Campus sign-in (section 2.4) is met only through the student's Moodle sign-in. |
 | Evidence | `lms.py` sends every Moodle call with the student's token (commit `b5c18f7`); prototype limits in `README.md`, section 4. Per-student sign-in: none yet. |
-| Related | ADR-02, ADR-04, QAS-02, FR-02, Q3 |
+| Related | ADR-02, ADR-04, CH-10, QAS-02, FR-02, Q3, Q6, R7 |
 
 ## 7.2 Trade-off summary
 
