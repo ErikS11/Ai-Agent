@@ -104,8 +104,17 @@ def main():
                 html_part = html_part.replace("<h1>", "<h1 class=\"newpage\">", 1)
                 first = False
             body.append(html_part)
-    # Sub-sections that share a top-level number should not each start a new page.
     html = "\n".join(body)
+    # Section 5 is written by several people in separate files; make sure the template's
+    # "5 Analysis Models" and "5.2 Object interaction models" headings appear exactly once.
+    if not re.search(r"<h1[^>]*>\s*5 Analysis Models", html):
+        first5 = re.search(r"<h[1-3][^>]*>\s*5\.\d", html)
+        if first5:
+            html = html[:first5.start()] + "<h1>5 Analysis Models</h1>" + html[first5.start():]
+    if not re.search(r"<h2[^>]*>\s*5\.2 Object interaction models", html, re.I):
+        first52 = re.search(r"<h[1-3][^>]*>\s*5\.2\.\d", html)
+        if first52:
+            html = html[:first52.start()] + "<h2>5.2 Object interaction models</h2>" + html[first52.start():]
     html = re.sub(r"<h1>(5\.[23][^<]*)</h1>", r"<h2>\1</h2>", html)
     OUT_HTML.write_text(f"<!doctype html><html><head><meta charset='utf-8'><title>CS3354 P2 Group 1</title>"
                         f"<style>{CSS}</style></head><body>{html}</body></html>")
