@@ -1,6 +1,6 @@
-Section 2 — Overall Description (Zaid draft)
+# 2 Overall Description
 
-2.2 Stakeholders and evidence
+## 2.2 Stakeholders and evidence
 
 Primary stakeholder: a student using Moodle to track coursework, understand course materials, and practice concepts. Other stakeholders include instructors whose course policies must be respected and administrators responsible for LMS access and data protection.
 
@@ -8,20 +8,20 @@ The prototype supports asking about courses, assignments, syllabus, pages, modul
 
 Survey (anonymous, voluntary): (1) How often do you miss or nearly miss LMS deadlines? Never/Rarely/Sometimes/Often. (2) Which LMS tasks are hardest? Select all: find deadlines, find assignment instructions, understand syllabus policies, review notes, practice concepts, other. (3) How useful would an AI assistant embedded in the LMS be? 1–5. (4) Which concern matters most? Accuracy, privacy, speed, academic integrity, accessibility, other. (5) Would you use a read-only study assistant that does not complete graded work? Yes/Maybe/No. Do not collect names or student IDs.
 
-Results placeholder — replace only with actual data: Responses n = [NOT COLLECTED]. Deadline difficulty: [COUNTS]. Top tasks: [COUNTS]. Mean usefulness: [NOT MEASURED]. Top concern: [COUNTS]. Would use: [COUNTS]. Sampling limitation: convenience sample of classmates; results are exploratory, not representative of all students.
+Evidence status: no survey responses or aggregate results have been supplied in this contribution. The stakeholder needs above remain assumptions supported by the project's intended scope, not validated student findings. No sample size, response counts, percentages or usefulness score is claimed. If the survey is completed, publish anonymized aggregate results and the collection method before using it as stakeholder evidence. A convenience sample of classmates would be exploratory, not representative of all students. The P1 stakeholder-evidence issue remains open.
 
-2.4 Feasibility update
+## 2.4 Feasibility update
 
-Technical feasibility — prototype demonstrated, production readiness unverified. The repository documents a self-hosted Moodle 5.3 instance in Docker with PostgreSQL, an LMS adapter using Moodle web-service calls, an agent with seven read-only tools, and a web/chat-bubble interface. The documented workflow supports course and assignment retrieval, but a repeatable demo log or test evidence should be linked before claiming end-to-end validation.
+Technical feasibility — implementation evidence exists; independent runtime validation and production readiness remain unverified. [Prototype commit b5c18f7](https://github.com/azghier1/Ai-Agent/commit/b5c18f7) adds the agent and Moodle adapter; [commit 347886c](https://github.com/azghier1/Ai-Agent/commit/347886c) adds the web chat and Moodle bubble. The [Docker configuration](https://github.com/azghier1/Ai-Agent/blob/20f021ff8db8a4827aeb2d1a4ac3ee82ff94abbf/docker-compose.yml) specifies Moodle 5.3 and PostgreSQL. The adapter implements course and assignment retrieval and the agent exposes seven read-only tools. These are code and configuration evidence; this contribution does not provide an independently reproduced end-to-end demo log.
 
-Integration feasibility — conditional. Canvas Lite did not provide the required API token access in the team's evaluation, so the team switched to self-hosted Moodle. The prototype relies on a configured single student's token; this is not suitable for multiple real student accounts. LTI 1.3 is planned, not implemented.
+Integration feasibility — conditional. The team's [onboarding record](https://github.com/azghier1/Ai-Agent/blob/20f021ff8db8a4827aeb2d1a4ac3ee82ff94abbf/ONBOARDING.md#1-where-the-project-is) reports that its Canvas Lite environment did not provide the needed token access, motivating the move to self-hosted Moodle. This records the team's environment-specific finding, not a claim about every Canvas deployment. The prototype relies on one configured student's token; it does not provide identity isolation for multiple real students. LTI 1.3 and a way to obtain each student's authorized Moodle access are planned, not implemented.
 
-Performance feasibility — open. QR-01's target (95% of responses within 5 seconds under 20 concurrent users) is not verified. Section 8's S-01 spike will supply evidence; do not state pass/fail until measured.
+Performance feasibility — open. QR-01's target (95% of responses within 5 seconds under 20 concurrent users) is not verified by this contribution. John's Section 8 S-01 experiment is the designated evidence source. Its actual results must determine the verdict; no timing or pass/fail outcome is claimed here.
 
 Privacy/security feasibility — conditional. Student question/context is sent to the external Anthropic Claude API over HTTPS. The current shared-token approach can expose one test student's data to anyone reaching the chat server. Production deployment requires per-user authentication, authorization and privacy review; the current prototype is for test data only.
 
 Operational/economic feasibility — conditional. Moodle and the chat server require hosting and maintenance, and Claude API usage incurs cost. Document actual usage costs and deployment assumptions before a production verdict.
 
-Verdict: feasible as a limited prototype using synthetic/test data; not yet demonstrated feasible for production deployment until identity, privacy, performance and operational risks are addressed.
+Verdict: the repository provides an implemented prototype and documented setup path using synthetic/test data. This supports a limited technical feasibility assessment, while stakeholder validation, independently reproduced integration, production identity/privacy, performance and operating cost remain unresolved. Production deployment feasibility is not yet established.
 
-Evidence to insert: GitHub links to relevant commits/README; actual survey summary; S-01 measurements; course/demo screenshots if verified.
+Additional implementation evidence: [student-token Moodle REST adapter and mock data interface](https://github.com/azghier1/Ai-Agent/blob/20f021ff8db8a4827aeb2d1a4ac3ee82ff94abbf/lms.py), [chat endpoint and shared-token/session limits](https://github.com/azghier1/Ai-Agent/blob/20f021ff8db8a4827aeb2d1a4ac3ee82ff94abbf/server.py), and [agent prompt, model loop and read-only tools](https://github.com/azghier1/Ai-Agent/blob/20f021ff8db8a4827aeb2d1a4ac3ee82ff94abbf/agent.py). Missing evidence is explicit: survey results, a reproducible live integration record, S-01 measurements and usage-cost records have not been supplied here. Section 9 maps these limitations to requirements and follow-up work.
