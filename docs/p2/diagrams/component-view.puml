@@ -1,0 +1,36 @@
+@startuml
+!pragma layout smetana
+skinparam componentStyle rectangle
+actor Student
+package "Student browser" {
+  component "Moodle page" as Page
+  component "Embedded launcher\nweb/embed.js" as Bubble
+  component "Chat panel\nweb/chat.html" as Chat
+}
+package "Agent host (Python)" {
+  component "FastAPI endpoint\nserver.py /api/chat" as API
+  component "Agent orchestrator\nagent.py" as Agent
+  component "7 read-only tools" as Tools
+  component "LMS adapter\nlms.py (MoodleLMS / MockLMS)" as Adapter
+}
+package "Moodle Docker" {
+  component "Moodle 5.3\nREST web services" as Moodle
+}
+database "PostgreSQL\nDocker" as DB
+cloud "Anthropic Claude API\nexternal trust boundary" as Claude
+Student --> Page
+Page --> Bubble : injected script
+Bubble --> Chat : opens iframe
+Chat --> API : HTTP POST /api/chat
+API --> Agent : ask(question)
+Agent --> Claude : HTTPS prompt + tool context
+Claude --> Agent : tool requests / answer
+Agent --> Tools : invoke read-only tool
+Tools --> Adapter : request course data
+Adapter --> Moodle : REST + student token
+Moodle --> DB : internal database queries
+note bottom of Claude
+Student/course data leaves host here.
+No secrets in browser or repository.
+end note
+@enduml
