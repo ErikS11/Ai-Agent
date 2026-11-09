@@ -2,7 +2,20 @@
 
 ## 7.1 Architecture decision records
 
-Each record names the drivers that forced the decision, the options the team actually weighed, what was chosen and what that choice costs.
+Each record names the drivers that forced the decision, the options the team actually weighed, what was chosen and what that choice costs. ADR-01 records the architectural style chosen in section 6.2.
+
+### ADR-01 Layered client-server architecture with an external AI service
+
+| Field | Record |
+|---|---|
+| Status | Accepted |
+| Date and owner | Decided Nov 8, 2026 by Ahmad Zghier (section 6.2, commit `9aec1ea`); recorded by Daniel Habib |
+| Context (drivers) | At least 95 of 100 requests must finish within 5.0 seconds with 20 concurrent requests (QAS-01), 100% of 20 negative authorization tests must return no protected information (QAS-02), and at least 19 of 20 injected LMS failures must produce a visible, non-sensitive error within 10 seconds (QAS-03). The system must work with Moodle (CON-01) within the team's resources and one term (CON-02). |
+| Options considered | (a) Layered client-server: the chat panel and launcher in the student's browser, an agent server (chat endpoint, agent orchestrator, read-only tools), an LMS adapter in front of Moodle, and Claude as an external service. (b) Monolithic Moodle plugin: the whole AI workflow built into Moodle. (c) Event-driven microservices: separate services and queues for chat, retrieval, tool execution and inference. |
+| Decision | (a) Layered client-server with an external AI service. |
+| Consequences | Favors modifiability and testability: the chat interface, agent and LMS adapter change independently, `MockLMS` stands in for Moodle in offline tests, Moodle stays the single source of truth, and student data leaves for Claude along one explicit path (QAS-02). An LMS failure surfaces in one layer, the adapter, where it can become a clear message (QAS-03). Cost: every question passes through each layer synchronously, plus one or more round trips to Claude, so delays add up (QAS-01, measured by S-01). The agent server is a single process that keeps chat sessions in memory, so it cannot scale out and loses chat history on restart. Compared with (b), it is one more service to run and secure beside Moodle; compared with (c), it gives up isolation at large scale. |
+| Evidence | The prototype already follows these layers: `web/` (presentation), `server.py` and `agent.py` (application), `lms.py` (LMS integration), commits `b5c18f7` and `347886c`. S-01 (section 8) measures the latency cost against QAS-01. |
+| Related | ADR-03, ADR-04, QAS-01, QAS-02, QAS-03, S-01 |
 
 ### ADR-02 Self-hosted Moodle as the LMS
 
@@ -60,6 +73,7 @@ Each record names the drivers that forced the decision, the options the team act
 
 | Quality favored | Architectural move | Cost accepted | Recorded in |
 |---|---|---|---|
+| Modifiability, testability | Layered client-server with Claude as an external service | Delays add up across layers (QAS-01); one in-memory agent server that cannot scale out | ADR-01 |
 | Feasibility, schedule | Self-host Moodle 5.3 instead of Canvas | Not the LMS students use; sample data only; the team hosts it; a Moodle-specific adapter | ADR-02 |
 | Data freshness, least privilege | Read course data live through read-only tools the model calls | Several model turns per question: response time (QR-01, measured by S-01) and API cost (R4) | ADR-03 |
 | Usability | Chat bubble on every Moodle page | An admin-approved site-wide script; no inherited sign-in or course context; a server every student must reach | ADR-04 |
