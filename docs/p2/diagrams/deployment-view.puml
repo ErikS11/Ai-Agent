@@ -1,4 +1,5 @@
 @startuml
+!pragma layout smetana
 skinparam shadowing false
 node "Student device" as device {
   artifact "Browser: Moodle page" as browser
