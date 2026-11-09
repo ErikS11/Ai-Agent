@@ -1,42 +1,56 @@
 # 6. High-Level Design
 
-**Author:** Ahmad Zghier, System Architect  
-**System:** Group 1 LMS AI Study Assistant  
-**Status:** P2 design baseline; proposed quality targets are not verified performance results. Cross-section checks require teammates' final sections.
-
-**Implementation evidence:** [`ONBOARDING.md`](../../../ONBOARDING.md), [`docs/p2/WORK_PLAN.md`](../WORK_PLAN.md), and repository sources [`server.py`](../../../server.py), [`agent.py`](../../../agent.py), [`lms.py`](../../../lms.py), [`web/embed.js`](../../../web/embed.js), [`web/chat.html`](../../../web/chat.html), and [`docker-compose.yml`](../../../docker-compose.yml).
 
 ## 6.1 Quality Attribute Scenarios
 
-| ID / attribute | Source and stimulus | Environment and affected artifact | Expected response | Measurable response / verification |
+The following are verifiable design targets, not claims that the prototype has passed testing. The sources of these scenarios are the revised P2 requirements (Section 3) and the P3 development plan.
+
+| Quality attribute | Artifact | Response | Response measure | From |
 |---|---|---|---|---|
-| **QAS-01 Performance (QR-01)** | 20 students concurrently submit ordinary course questions | Running Moodle-backed prototype; browser chat, FastAPI server, agent, LMS adapter and Claude API | The system retrieves permitted course context and returns an answer without blocking unrelated requests | **At least 95 of 100 requests finish within 5.0 seconds**, measured from HTTP request submission to complete HTTP response, with 20 concurrent requests per batch. Record p50, p95, errors, model and LMS configuration. **Target, not yet demonstrated;** Zaid's S-01 spike provides evidence. |
-| **QAS-02 Access control (QR-03)** | A student attempts to access another student's assignment/grade or invokes the chat without a valid student session | Authenticated production-style integration, including the chat API and Moodle web services | Reject unauthenticated requests; retrieve only data authorized for the requesting student; do not reveal another student's data | **100% of 20 negative authorization test cases** return no protected information; invalid or missing credentials result in HTTP 401/403 (or equivalent safe rejection). **Not satisfied by current single-token prototype;** per-student LTI 1.3 identity is planned for P3. |
-| **QAS-03 Failure handling (FR-07)** | Moodle is unavailable or returns a failed API response while a student asks about an assignment | Chat UI, FastAPI server and LMS adapter during an LMS outage | Display an understandable error without fabricating assignment details or exposing secrets | **At least 19 of 20 injected LMS-failure cases** produce a visible, non-sensitive error response within **10 seconds**; **0 of 20** present fabricated Moodle data as verified fact. Target for P3 testing, not a measured result. |
+| **QAS-01: Performance (QR-01)**. Twenty students send ordinary course questions concurrently. | Chat panel, `POST /api/chat`, agent orchestrator, LMS adapter, Claude API | Accept concurrent questions and provide complete responses without blocking unrelated sessions. | **95 of 100 requests finish within 5.0 seconds**, measured from HTTP request start to full HTTP response, in batches of 20 concurrent requests; log p50, p95, error count and test configuration. This is a **target**, pending S-01 spike results. | QR-01; UC-01; spike S-01 |
+| **QAS-02: Access control (QR-03)**. An unauthorized user requests another student's grades, or calls the endpoint without valid identity. | Chat API identity boundary, MoodleLMS adapter and Moodle access controls | Deny requests without verified identity or permission and disclose no protected records. | **20/20** negative authorization tests disclose **zero** protected records; reject invalid/missing credentials with HTTP 401/403 or equivalent. **Not met in the current prototype:** the API has no per-student authentication and uses one configured test token. | QR-03; FR-02; UC-01; ADR-05 |
+| **QAS-03: Failure handling (FR-07)**. Moodle is unavailable or its REST API fails while a student asks about assignments. | LMS adapter, agent orchestrator, FastAPI and chat panel | Show a clear failure notice without fabricating assignment data or leaking credentials. | In **at least 19/20** simulated outages, show a non-sensitive error **within 10 seconds**; **0/20** label invented data as retrieved from Moodle. This is a proposed P3 test, not a measured result. | FR-07; UC-02; P3 backlog |
+
+**Constraints shaping the architecture:** **CON-01** requires integration with the team's self-hosted Moodle 5.3 LMS, so academic data is retrieved through Moodle REST rather than Canvas. **CON-02** limits development to the course team's available resources, favoring a lightweight layered prototype and avoiding separately operated microservices. The existing Moodle-token design and external Claude dependency also require the security measures described in Section 6.4.
 
 ## 6.2 Architectural Style and Alternatives
 
-**Selected: layered client-server architecture with an external AI service.** The presentation layer is the Moodle-embedded chat interface (`web/embed.js`, `web/chat.html`). The application/API layer is FastAPI (`server.py`) and the agent orchestration (`agent.py`). The LMS integration layer is `lms.py`, which translates the seven read-only agent tools into Moodle REST web-service requests. Moodle 5.3 and PostgreSQL own authoritative course records; Anthropic Claude is a separate, externally hosted inference service. This is a logical layering decision, not a claim that each layer has its own physical server.
+**Selected architecture: layered client-server with an external AI service (ADR-01).** The presentation layer is the Moodle-embedded chat UI (`web/embed.js` and `web/chat.html`). The API/application layer is FastAPI (`server.py`) and the agent orchestrator (`agent.py`). The integration layer is the seven read-only tools plus `lms.py`. Moodle 5.3 and PostgreSQL maintain authoritative academic records; Anthropic Claude performs external AI inference. These are logical layers, not necessarily separate physical hosts.
 
-**Why it fits:** (1) the chat interface can change without changing Moodle integration; (2) the adapter allows `MockLMS` for offline tests; (3) Moodle remains the source of truth; (4) read-only LMS tools limit accidental modification; and (5) the external API trust boundary is explicit. **ADR-01** in Section 7 should document this exact choice.
+| Style | Drivers it serves | What it costs | Verdict |
+|---|---|---|---|
+| **Layered client-server + external AI** | UC-01 through UC-04, QAS-01, separation of presentation/orchestration/LMS access, `MockLMS` testing, Moodle integration | Network round trips, latency and paid inference; external transfer of selected student context; single service failure point | **Selected**: simple fit for the actual Python/FastAPI prototype and ADR-01 |
+| **Monolithic Moodle plugin** | Fewer independent endpoints; tight LMS UI integration | Couples model changes, secrets and deployment to Moodle plugin internals; harder independent offline testing | **Rejected**: unnecessary Moodle coupling |
+| **Event-driven microservices with queues** | Can isolate components at larger scale and absorb asynchronous workloads | Multiple deployments, queue state, ordering, tracing and debugging for a small request/response prototype | **Rejected**: excessive complexity under CON-02 |
 
-**Rejected alternative A: monolithic Moodle plugin.** Embedding the entire AI workflow into Moodle would reduce the number of separate services but couple agent upgrades, external AI credentials, testing, and deployment to Moodle internals. It would be harder to run the existing terminal/mock implementation independently.
-
-**Rejected alternative B: event-driven microservices.** Separate services and queues for chat, retrieval, tool execution and inference could improve isolation at scale, but would add deployment, observability, message-ordering and debugging overhead to a small course prototype. The request/response interaction and limited team size do not justify that complexity yet.
-
-**Consequences:** External Claude calls create latency, availability, cost and student-data-disclosure risks. The present local HTTP setup is development-only; production requires TLS, student-specific identity, careful data minimization, and server-side secret handling.
+The chosen style allows the chat interface to change without rewriting Moodle access, isolates the real/mock LMS behind a consistent tool interface, and keeps LMS records in Moodle. It does **not** by itself meet the latency or authentication goals. In P3 the team plans per-student LTI 1.3 identity, source references, cross-course deadline logic and performance improvements.
 
 ## 6.3 Component View
 
-See editable **`docs/p2/diagrams/component-view.puml`** and exported **`component-view.png`**. The UML component view identifies the Moodle page, embedded launcher and chat panel, FastAPI chat endpoint, agent orchestrator, read-only tools, LMS adapter, Moodle web services, PostgreSQL and Claude API. Solid arrows represent synchronous calls, not database ownership. The browser does **not** connect directly to PostgreSQL or Anthropic.
+![Figure 6.3. UML component diagram of the study assistant](../diagrams/component-view.png)
 
-**Typical flow:** (1) student opens Moodle and the embedded chat; (2) chat posts a question to `/api/chat`; (3) the agent sends the question and tool definitions to Claude; (4) if Claude requests a tool, the agent invokes `lms.py`; (5) the adapter calls Moodle REST using the configured student token; (6) Moodle reads the relevant records from PostgreSQL; (7) tool results return to the agent and Claude generates the response; (8) FastAPI returns the response to the chat. Claude may make multiple tool calls, so one chat turn can involve multiple external requests.
+*Figure 6.3. UML component view. Editable source: `docs/p2/diagrams/component-view.puml`.*
 
-**Traceability:** The chat UI and API support **UC-01 Ask Course-Related Questions**, the agent and adapter support **UC-02 Organize Assignments** and **UC-03 View Upcoming Deadlines**; the tutor prompt supports the planned **UC-04 Generate Practice Questions**; read-only tools support data-integrity constraints; authorization boundary supports QAS-02; error-handling path supports QAS-03; API/orchestration path is measured by QAS-01. The prototype currently lacks answer source citations, a dedicated seven-day cross-course aggregation endpoint, and verified practice-question behavior.
+| Component | Responsibility | Provides | Requires | Answers to (UC / QAS / ADR) |
+|---|---|---|---|---|
+| Moodle embedded launcher (`web/embed.js`) | Make the assistant available inside Moodle pages | Button and embedded chat iframe | Moodle page, reachable chat host | UC-01, QR-02, ADR-04 |
+| Chat panel (`web/chat.html`) | Capture requests and display answers or errors | Question input, answer display and status | FastAPI chat endpoint | UC-01–UC-04, QAS-03, ADR-04 |
+| FastAPI (`server.py`) | Validate requests, manage temporary sessions, serve frontend and API | `POST /api/chat`, `/api/reset`, `/api/health` | Agent orchestrator, in-memory session state | UC-01–UC-04, QAS-01, QAS-02, ADR-01 |
+| Agent orchestrator (`agent.py`) | Run Claude tool-calling loop and tutoring instructions | AI answer generation and tool selection | Claude API, seven LMS tools | UC-01–UC-04, QAS-01, ADR-01, ADR-03 |
+| Seven read-only LMS tools (`agent.py`) | Expose course, assignment, page and announcement lookups | Typed retrieval operations | LMS adapter methods | UC-01–UC-03, ADR-03 |
+| LMS adapter (`lms.py`) | Convert retrieval operations to Moodle REST or mock results | `MoodleLMS` / `MockLMS` interface | Moodle REST and configured test student token | UC-01–UC-03, QAS-02, ADR-02, ADR-05 |
+| Moodle 5.3 REST service (external LMS subsystem) | Enforce LMS-side permissions and supply student-visible records | Moodle course-data REST API | PostgreSQL LMS database | UC-01–UC-03, ADR-02, ADR-05 |
+| Anthropic Claude API (external provider) | Generate responses and tool requests | Model inference | Selected prompts, question/context | UC-01, UC-04, QAS-01, ADR-03 |
+
+**Interaction flow:** student opens the embedded chat; the chat posts to `/api/chat`; FastAPI calls the agent; the agent sends a prompt/tool schema to Claude; the model requests a read-only tool when needed; the adapter fetches accessible Moodle data; the resulting tool content is passed back to Claude for an answer; FastAPI returns that answer to the panel. A question may cause multiple model and Moodle calls. The browser does not directly query PostgreSQL or call Claude.
+
+**Known implementation gaps:** source citations, dedicated seven-day cross-course aggregation, measured response-time compliance, and per-student authentication are not yet implemented or verified.
 
 ## 6.4 Deployment View and Trust Boundaries
 
-See editable **`docs/p2/diagrams/deployment-view.puml`** and exported **`deployment-view.png`**.
+![Figure 6.4. UML deployment diagram](../diagrams/deployment-view.png)
+
+*Figure 6.4. UML deployment view. Editable source: `docs/p2/diagrams/deployment-view.puml`.*
 
 | Node / boundary | Deployed elements | Communication and data |
 |---|---|---|
@@ -50,29 +64,29 @@ See editable **`docs/p2/diagrams/deployment-view.puml`** and exported **`deploym
 
 ## 6.5 Analysis-to-Component Mapping
 
-This mapping reflects the currently documented entities and must be reconciled against Omor's final Section 5.1 domain model before the P2 PDF is assembled. **Ownership** means the authoritative record system, not necessarily the component that displays it.
+The table maps analysis objects (Section 5) to **components of this design**, not merely to the external record owner. Omor's UC-01 object names and final Section 5.1 model should be checked for exact spelling before the team assembles its PDF. "Split" means the analysis responsibility is implemented by more than one component; "external" means records are hosted by Moodle, not reimplemented in our agent.
 
-| Domain concept | Authoritative owner | Access / presentation component | Notes |
+| Analysis object / concept | Design component(s) from 6.3 | Allocation | Rationale |
 |---|---|---|---|
-| Student | Moodle user/account model and PostgreSQL | Moodle REST → `MoodleLMS` → agent/chat | Single test token today; per-student identity is a P3 gap. |
-| Course / enrollment | Moodle course/enrollment models | `MoodleLMS` course-list tool; agent/chat | Access restricted to the authenticated student's courses in intended design. |
-| Assignment / due date / submission status | Moodle assignment and submission records | Assignment-list and assignment-detail tools | Seven-day cross-course filtering is planned, not implemented as a dedicated tool. |
-| Grade | Moodle gradebook | Course/assignment retrieval tools | Sensitive student data; never persisted by the agent as a second source of truth. |
-| Announcement | Moodle course announcements/forum data | Announcement-list tool | Read-only retrieval. |
-| Course module / page / syllabus | Moodle course content | Module, page and syllabus tools | The assistant summarizes retrieved content. |
-| Student question / generated answer / chat session | Agent-server process memory (`server.py` `sessions` dictionary), not persistent storage | `web/chat.html`, `server.py`, `agent.py`, Claude | Chat messages are retained in server RAM until reset, eviction or restart. No durable conversation database exists in the documented prototype. |
-| AI tool invocation | Agent orchestrator (`agent.py`) | `lms.py` executes the selected read-only Moodle operation | Tool definitions belong to the agent; Moodle owns returned academic records. |
+| `AssistantInterface` (UC-02) | Moodle embedded launcher + chat panel (`web/embed.js`, `web/chat.html`) | Split | Opens the assistant, accepts student input and displays organized assignments. |
+| `AssignmentOrganizer` (UC-02) | Agent orchestrator (`agent.py`) + read-only tools + LMS adapter (`lms.py`) | Split | Coordinates course/assignment requests; underlying data retrieval remains in the adapter. Chronological ordering and dedicated seven-day aggregation are not fully implemented. |
+| Student | LMS adapter (`lms.py`) using Moodle user identity; FastAPI for temporary chat session | External record / split | Moodle owns student records; current prototype has only one configured test student token, not verified chat identity. |
+| Course / Enrollment | LMS adapter (`lms.py`) via Moodle course retrieval | External record | Course/enrollment data resides in Moodle, exposed by the adapter. |
+| Assignment / Submission | LMS adapter (`lms.py`) and read-only assignment tools | External record | Moodle supplies deadlines, statuses and assignment instructions. |
+| Grade | LMS adapter (`lms.py`) and course/assignment tools | External record | Grades remain authoritative in the Moodle gradebook. |
+| Announcement | LMS adapter (`lms.py`) and announcement tool | External record | Moodle forum/announcement records are accessed read-only. |
+| Course module / Page / Syllabus | LMS adapter (`lms.py`) and module/page/syllabus tools | External record | The adapter normalizes course content for use in answers. |
+| Student question / Chat session | Chat panel + FastAPI in-memory session dictionary | Split | Browser submits question; server retains temporary history, not a persistent database. |
+| Generated answer / tool request | Agent orchestrator + external Claude API | Split / external service | Claude generates responses/tool requests; the agent validates and executes defined LMS tools. |
 
 ## 6.6 Design Principles
 
-1. **Separation of concerns:** `web/chat.html` and `web/embed.js` handle interaction; `server.py` exposes HTTP endpoints; `agent.py` orchestrates model/tool calls; `lms.py` handles Moodle-specific access. This makes the components independently understandable and testable.
-2. **Dependency inversion at the LMS boundary:** `MoodleLMS` and `MockLMS` provide real and offline data access paths. The agent does not need to embed raw Moodle REST calls in the chat UI.
-3. **Least privilege and read-only operation:** The seven LMS tools retrieve course data but do not submit assignments, change grades or edit Moodle. The intended production design scopes access to the requesting student; current shared-token behavior is a documented limitation.
-4. **Single source of truth:** Moodle/PostgreSQL own academic records. The agent requests current information instead of maintaining a separate writable copy of grades and assignments.
-5. **Explicit trust boundaries:** External Claude requests are separated from Moodle's internal database and the browser. Sensitive tokens stay server-side; outbound student data requires policy review and minimization.
-6. **Testability and measurable design:** `MockLMS` supports deterministic offline checks; QAS-01 defines a repeatable concurrent load experiment; QAS-02 and QAS-03 specify negative authorization and outage tests. Passing results are not claimed until observed.
-7. **Evolutionary design:** Keep the simple layered system for P2, then add LTI 1.3 identity, citations, accessible chat, cross-course deadlines, and latency improvements in P3 without rewriting Moodle.
+| Principle | Design evidence | Benefit / trade-off |
+|---|---|---|
+| **Separation of concerns** | `web/chat.html` and `web/embed.js` own user interaction; `server.py` owns HTTP endpoints/session handling; `agent.py` owns model workflow; `lms.py` owns Moodle access. | Changes remain localized; additional layer boundaries require clear interfaces. |
+| **Information hiding** | Moodle tokens and REST request parameters are encapsulated in `MoodleLMS`; the chat UI calls `/api/chat` rather than handling Moodle credentials. | The client cannot directly read tokens; backend must still authenticate users before real deployment. |
+| **Low coupling** | `agent.py` calls the same seven methods whether `make_lms()` returns `MoodleLMS` or `MockLMS`; the browser speaks only to the FastAPI contract. | Supports offline tests and possible future LMS adapters; actual adapter remains Moodle-specific. |
+| **High cohesion** | The agent manages inference/tool choices; the LMS adapter performs data retrieval; chat files manage presentation; Moodle maintains its academic database. | Each module has a focused responsibility, making failures easier to locate. |
+| **Design for change** | `MockLMS` and `MoodleLMS` share a tool interface; P3 additions (LTI identity, citations, 7-day aggregation) can be introduced without replacing the UI and database. | Identity and citation contracts still need explicit implementation and testing. |
+| **KISS (Keep It Simple)** | One FastAPI service, an embedded browser panel, seven read-only retrieval tools, Moodle containers and one external model; rejected queued microservices and a custom Moodle plugin. | Less operational complexity, but sequential external calls may affect QAS-01 latency. |
 
-**Outstanding cross-section checks before final submission:** Erik's PR #4 currently uses UC-01 Ask Course-Related Questions, UC-02 Organize Assignments, UC-03 View Upcoming Deadlines, and UC-04 Generate Practice Questions; confirm those stay unchanged after merging; align the ownership rows with Omor's final domain diagram; ensure Daniel's pending ADR-01 selects the same layered client-server style (Daniel's PR #2 currently starts at ADR-02); replace QAS-01's unverified status with a reference to Zaid's actual spike results when available; and ensure the team AI-use table declares ChatGPT assistance for this section.
-
-**Version check:** This section describes the P2 prototype, not features promised for P3. Targets in QAS-01–03 are requirements/test plans, not passing test outcomes.
