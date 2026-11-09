@@ -1,5 +1,7 @@
 # LMS Study Assistant
 
+> **Team members: start with [ONBOARDING.md](ONBOARDING.md). The P2 plan and assignments are in [docs/p2/WORK_PLAN.md](docs/p2/WORK_PLAN.md).**
+
 A command-line study assistant for **students**, connected to a self-hosted **Moodle** LMS. It uses Claude (`claude-opus-5-5`) to help a student stay organized and learn the material, using only that student's own data.
 
 Examples:
