@@ -14,7 +14,7 @@ entity ":Course" as Course
 entity ":Assignment" as Assignment
 entity ":Submission" as Submission
 
-Student -> AssistantInterface : 1 asks for their assignments\norganized by due date
+Student -> AssistantInterface : 1 asks for an organized list of\nassignments from their enrolled courses
 AssistantInterface -> AssignmentOrganizer : 2.1 passes on the request to\norganize the student's assignments
 AssignmentOrganizer -> StudentRecord : 2.2 asks for the courses the\nstudent is enrolled in
 
@@ -22,8 +22,8 @@ loop each enrolled course
   AssignmentOrganizer -> Course : 2.3 asks the course for its\npublished assignments
   break A3: the course's assignments cannot be retrieved
     Course --> AssignmentOrganizer : A3.1 reports that its assignments\ncannot be retrieved
-    AssignmentOrganizer -> AssistantInterface : A3.2 reports that the assignments\ncould not be retrieved
-    AssistantInterface -> Student : A3.3 shows an error message\nnaming the course
+    AssignmentOrganizer -> AssistantInterface : A3.2 reports that the assignment\nlist could not be completed
+    AssistantInterface -> Student : A3.3 explains that assignment\ninformation is temporarily\nunavailable, without a partial list
   end
   loop each assignment of the course
     AssignmentOrganizer -> Assignment : 2.4 asks the assignment for the\nstudent's submission status
@@ -31,7 +31,14 @@ loop each enrolled course
   end
 end
 
-AssignmentOrganizer -> AssignmentOrganizer : 2.6 orders the assignments by due date,\nundated ones last, and marks those\ndue in the next seven days
+AssignmentOrganizer -> AssignmentOrganizer : 2.6 orders the assignments by due date,\nplacing undated ones last and marking\nthem as having no deadline
 AssignmentOrganizer -> AssistantInterface : 2.7 hands over the organized list
 AssistantInterface -> Student : 2.8 shows the organized list
+
+Student -> AssistantInterface : 3 asks for more information\nabout one assignment
+AssistantInterface -> AssignmentOrganizer : 4.1 passes on the request for\nthat assignment's details
+AssignmentOrganizer -> Assignment : 4.2 asks the assignment for its instructions,\ndue date and the student's submission status
+Assignment -> Submission : 4.3 looks up the\nstudent's submission
+AssignmentOrganizer -> AssistantInterface : 4.4 hands over the assignment's details
+AssistantInterface -> Student : 4.5 shows the assignment's details\nand confirms they have been provided
 @enduml
